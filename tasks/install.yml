@@ -1,0 +1,86 @@
+---
+- name: Create the PushProx group
+  group:
+    name: "{{ pushprox_system_group }}"
+    state: present
+    system: true
+
+- name: Create the PushProx user
+  user:
+    name: "{{ pushprox_system_user }}"
+    groups: "{{ pushprox_system_group }}"
+    append: true
+    shell: /usr/sbin/nologin
+    system: true
+    createhome: false
+    home: /
+
+- name: Download PushProx binary to local folder
+  become: false
+  get_url:
+    url: "https://github.com/prometheus-community/PushProx/releases/download/v{{ pushprox_version }}/PushProx-{{ pushprox_version }}.linux-{{ go_arch }}.tar.gz"
+    dest: "/tmp/PushProx-{{ pushprox_version }}.linux-{{ go_arch }}.tar.gz"
+    checksum: "sha256:{{ pushprox_checksum }}"
+    mode: '0644'
+  register: _download_binary
+  until: _download_binary is succeeded
+  retries: 5
+  delay: 2
+  delegate_to: localhost
+  check_mode: false
+
+- name: Unpack PushProx binaries
+  become: false
+  unarchive:
+    src: "/tmp/PushProx-{{ pushprox_version }}.linux-{{ go_arch }}.tar.gz"
+    dest: "/tmp"
+    creates: "/tmp/PushProx-{{ pushprox_version }}.linux-{{ go_arch }}/LICENSE"
+  delegate_to: localhost
+  check_mode: false
+
+- name: Propagate pushprox-proxy binary
+  copy:
+    src: "/tmp/PushProx-{{ pushprox_version }}.linux-{{ go_arch }}/pushprox-proxy"
+    dest: "{{ pushprox_binary_install_dir }}/pushprox-proxy"
+    mode: 0755
+    owner: root
+    group: root
+  notify: restart pushprox-proxy
+  when: not ansible_check_mode and pushprox_install_proxy|bool
+
+- name: Propagate pushprox-client binary
+  copy:
+    src: "/tmp/PushProx-{{ pushprox_version }}.linux-{{ go_arch }}/pushprox-client"
+    dest: "{{ pushprox_binary_install_dir }}/pushprox-client"
+    mode: 0755
+    owner: root
+    group: root
+  notify: restart pushprox-client
+  when: not ansible_check_mode and pushprox_install_client|bool
+
+
+- block:
+    - name: Create Certificates directory
+      file:
+        path: "{{ pushprox_client_tls_path }}"
+        state: directory
+        owner: "{{ pushprox_system_user }}"
+        group: "{{ pushprox_system_group }}"
+        mode: 0700
+    - name: Copy Certificate files
+      copy: 
+        src: "{{ item }}"
+        dest: "{{ pushprox_client_tls_path }}"
+        owner: "{{ pushprox_system_user }}"
+        group: "{{ pushprox_system_group }}"
+        mode: 0700
+      notify: restart pushprox-client      
+      loop:
+        - "{{ pushprox_client_tls_cacert }}"
+        - "{{ pushprox_client_tls_cert }}"
+        - "{{ pushprox_client_tls_key }}"
+  when: 
+    - pushprox_install_client|bool
+    - pushprox_client_tls_cacert is defined
+    - pushprox_client_tls_cert is defined
+    - pushprox_client_tls_key is defined

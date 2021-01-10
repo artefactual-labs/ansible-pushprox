@@ -1,0 +1,14 @@
+---
+- name: restart pushprox-client
+  become: true
+  systemd:
+    daemon_reload: true
+    name: pushprox-client
+    state: restarted
+
+- name: restart pushprox-proxy
+  become: true
+  systemd:
+    daemon_reload: true
+    name: pushprox-proxy
+    state: restarted

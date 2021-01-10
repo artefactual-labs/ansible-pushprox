@@ -1,0 +1,49 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=pushprox-client
+After=network-online.target
+StartLimitInterval=0
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User={{ pushprox_system_user }}
+Group={{ pushprox_system_group }}
+ExecStart={{ pushprox_binary_install_dir }}/pushprox-client \
+    --fqdn={{ pushprox_client_fqdn  }} \
+    --proxy-url={{ pushprox_client_proxy_url }} \
+{% if pushprox_client_tls_cacert is defined and pushprox_client_tls_cert is defined and pushprox_client_tls_key is defined  %}
+    --tls.cacert={{ pushprox_client_tls_path }}/{{ pushprox_client_tls_cacert | basename }} \
+    --tls.cert={{ pushprox_client_tls_path }}/{{ pushprox_client_tls_cert | basename }} \
+    --tls.key={{ pushprox_client_tls_path }}/{{ pushprox_client_tls_key | basename }} \
+{% endif %}
+{% if pushprox_client_metrics_addr is defined %}
+    --metrics-addr={{ pushprox_client_metrics_addr }} \
+{% endif %}
+    --log.level={{ pushprox_client_level }} \
+    --log.format={{ pushprox_client_log_format }}
+
+SyslogIdentifier=pushprox-client
+Restart=always
+RestartSec=1
+StartLimitInterval=0
+
+{% for m in ansible_mounts if m.mount == '/home' %}
+ProtectHome=read-only
+{% else %}
+ProtectHome=yes
+{% endfor %}
+NoNewPrivileges=yes
+
+{% if pushprox_systemd_version | int >= 232 %}
+ProtectSystem=strict
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=yes
+{% else %}
+ProtectSystem=full
+{% endif %}
+
+[Install]
+WantedBy=multi-user.target

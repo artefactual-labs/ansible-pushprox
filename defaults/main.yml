@@ -1,0 +1,47 @@
+---
+
+pushprox_version: "0.1.0"
+
+pushprox_install_proxy: False
+pushprox_install_client: True
+
+pushprox_system_user: "pushprox"
+pushprox_system_group: "pushprox"
+pushprox_binary_install_dir: "/usr/local/bin"
+
+#
+# Proxy variables
+#
+
+pushprox_proxy_web_listen_address: "0.0.0.0:8080"
+pushprox_proxy_registration_timeout: "5m"
+pushprox_proxy_scrape_max_timeout: "5m"
+pushprox_proxy_scrape_default_timeout: "15s"
+# Only log messages with the given severity or above. One of: [debug, info, warn, error]
+pushprox_proxy_log_level: "info"
+# Output format of log messages. One of: [logfmt, json]
+pushprox_proxy_log_format: "logfmt"
+
+#
+# Client variables
+#
+
+pushprox_client_proxy_url: "https://example.com:8080"
+pushprox_client_fqdn: "localhost"
+# Only log messages with the given severity or above. One of: [debug, info, warn, error]
+pushprox_client_level: "info"
+# Output format of log messages. One of: [logfmt, json]
+pushprox_client_log_format: "logfmt"
+# Serve Prometheus metrics at this address
+# pushprox_client_metrics_addr: ":9369"
+
+# To use certificate auth, uncomment the following variables (all)
+
+# <file> CA certificate to verify peer against
+#pushprox_client_tls_cacert: "TLS.CACERT"
+# <cert> Client certificate file
+#pushprox_client_tls_cert: "TLS.CERT"
+# <key> Private key file
+#pushprox_client_tls_key: "TLS.KEY"
+
+pushprox_client_tls_path: "/var/lib/pushprox"

@@ -1,0 +1,20 @@
+---
+- name: Copy the pushprox-proxy systemd service file
+  template:
+    src: pushprox-proxy.service.j2
+    dest: /etc/systemd/system/pushprox-proxy.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart pushprox-proxy
+  when: pushprox_install_proxy|bool
+
+- name: Copy the pushprox-client systemd service file
+  template:
+    src: pushprox-client.service.j2
+    dest: /etc/systemd/system/pushprox-client.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart pushprox-client
+  when: pushprox_install_client|bool
