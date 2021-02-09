@@ -45,3 +45,11 @@ pushprox_client_log_format: "logfmt"
 #pushprox_client_tls_key: "TLS.KEY"
 
 pushprox_client_tls_path: "/var/lib/pushprox"
+
+#
+# Logging variables
+#
+pushprox_systemd_syslog_identifier: "pushprox"
+pushprox_systemd_standard_output: "syslog"
+pushprox_systemd_standard_error: "syslog"
+

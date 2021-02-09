@@ -24,7 +24,9 @@ ExecStart={{ pushprox_binary_install_dir }}/pushprox-client \
     --log.level={{ pushprox_client_level }} \
     --log.format={{ pushprox_client_log_format }}
 
-SyslogIdentifier=pushprox-client
+SyslogIdentifier={{ pushprox_systemd_syslog_identifier }}
+StandardOutput={{ pushprox_systemd_standard_output }}
+StandardError={{ pushprox_systemd_standard_error }}
 Restart=always
 RestartSec=1
 StartLimitInterval=0
